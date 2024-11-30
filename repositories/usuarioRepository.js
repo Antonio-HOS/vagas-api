@@ -1,23 +1,23 @@
 const Usuario = require("../models/usuario");
 
-async function obterTodos() {
+async function getAllUsers() {
   return Usuario.findAll();
 }
 
-async function buscarPorId(id) {
+async function getUserById(id) {
   return Usuario.findByPk(id);
 }
 
-async function buscarPorEmail(email) {
+async function GetUserByEmail(email) {
   return Usuario.findOne({ where: { email } });
 }
 
-async function adicionarUsuario(dados) {
+async function createUser(dados) {
   const { nome, email, senha } = dados;
   return Usuario.create({ nome, email, senha });
 }
 
-async function deletarUsuario(id) {
+async function deleteUser(id) {
   const usuario = await Usuario.findByPk(id);
   if (usuario) {
     await usuario.destroy();
@@ -26,7 +26,7 @@ async function deletarUsuario(id) {
   return null;
 }
 
-async function editarUsuario(id, dadosAtualizados) {
+async function updateUser(id, dadosAtualizados) {
   const usuario = await Usuario.findByPk(id);
   if (usuario) {
     const { nome, email, senha } = dadosAtualizados;
@@ -38,10 +38,10 @@ async function editarUsuario(id, dadosAtualizados) {
 }
 
 module.exports = {
-  obterTodos,
-  buscarPorId,
-  buscarPorEmail,
-  adicionarUsuario,
-  editarUsuario,
-  deletarUsuario,
+  getAllUsers,
+  getUserById,
+  GetUserByEmail,
+  createUser,
+  deleteUser,
+  updateUser,
 };

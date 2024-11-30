@@ -1,35 +1,36 @@
-const express = requite("express");
+
+const express = require("express");
 const router = express.Router();
-const bcrypt = require("jsonwebtoken");
-const Usuario = require("../models/usuario");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { authenticateToken } = require("../middlewares/authenticateToken");
-const { where } = require("sequelize");
+const {
+  getAllUsers,
+  getUserById,
+  getUserByEmail,
+  createUser,
+  updateUser,
+  deleteUser,
+} = require("../models/usuarios");
 const SECRET_KEY = process.env.SECRET_KEY || "secreta";
 
+//CRIAR USUÁRIO
 router.post("/register", async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
-    const hashedPassWord = await bcrypt.hash(senha, 10);
-
-    const newuser = await Usuario.create({
-      nome,
-      email,
-      senha: hashedPassWord,
-    });
-    res
-      .status(201)
-      .jso({ message: "Usuário criado com sucesso", user: newUser });
+    const hashedPassword = await bcrypt.hash(senha, 10);
+    const newUser = await createUser({ nome, email, senha: hashedPassword });
+    res.status(201).json({ message: "Usuário criado com sucesso", user: newUser });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-//ÁREA DE LOGIN
-
+//FAZER LOGIN
 router.post("/login", async (req, res) => {
-  const { email, senha } = req.body;
   try {
-    const user = await Usuario.findOne({ where: { email } });
+    const { email, senha } = req.body;
+    const user = await getUserByEmail(email);
     if (!user || !bcrypt.compareSync(senha, user.senha)) {
       return res.status(401).json({ message: "Credenciais inválidas" });
     }
@@ -42,83 +43,62 @@ router.post("/login", async (req, res) => {
   }
 });
 
-//GET: DE TODOS OS USUÁRIOS
-
+//GET: TODAS OS USUÁRIOS
 router.get("/", authenticateToken, async (req, res) => {
   try {
-    const usuarios = await Usuario.findAll();
+    const usuarios = await getAllUsers();
     res.json({ usuarios });
   } catch (err) {
-    res.status(500).json({ erro: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-//GET: DE UM ÚNICO USUÁRIO
-
+//GET: UM USUÁRIO POR ID
 router.get("/:id", authenticateToken, async (req, res) => {
   try {
-    const user = await Usuario.findByPk(req.params.id);
+    const user = await getUserById(req.params.id);
     if (user) {
-      res.json({ user });
-    } else {
-      res.status(404), json({ error: "Usuario não encontrado" });
-    }
-  } catch (err) {
-    res.status(500), json({ error: err.message });
-  }
-});
-
-//POST: CRIAR NOVO USUÁRIO
-router.post("/", authenticateToken, async (req, res) => {
-  try {
-    const { nome, email, senha } = res.body;
-    const hashedPassWord = await bcrypt.hash(senha, 10);
-
-    const newUser = await Usuario.create({
-      nome,
-      email,
-      senha: hashedPassWord,
-    });
-
-    res.status(201).json({ user: newUser });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-//PUT: ATUALIZANDO USUÁRIO
-router.put("/:id", authenticateToken, async (req, res) => {
-  try {
-    const { nome, email, senha } = req.body;
-    const user = await Usuario.findByPk(req.params.id);
-
-    if (user) {
-      (user.nome = nome),
-        (user.email = email),
-        (user.senha = senha ? await bcrypt.hash(senha, 10) : user.senha);
-      await user.save();
-      res.json({ user });
-    } else {
-      res.status(404).json({ error: "usuario não encontrado" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-//DELETE: DELETANDO USUÁRIO POR ID
-router.delete("/:id", authenticateToken, async (req, res) => {
-  try {
-    const user = await Usuario.findByPk(req.params.id);
-    if (user) {
-      await user.destroy();
       res.json({ user });
     } else {
       res.status(404).json({ error: "Usuário não encontrado" });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
-  } 
+  }
+});
+
+//PUT: ATUALIZAR USUÁRIO POR ID
+router.put("/:id", authenticateToken, async (req, res) => {
+  try {
+    const { nome, email, senha } = req.body;
+    const hashedPassword = senha ? await bcrypt.hash(senha, 10) : undefined;
+    const updatedUser = await updateUser(req.params.id, {
+      nome,
+      email,
+      senha: hashedPassword,
+    });
+    if (updatedUser) {
+      res.json({ user: updatedUser });
+    } else {
+      res.status(404).json({ error: "Usuário não encontrado" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//DELETE: DELETAR USUÁRIO POR ID
+router.delete("/:id", authenticateToken, async (req, res) => {
+  try {
+    const deletedUser = await deleteUser(req.params.id);
+    if (deletedUser) {
+      res.json({ user: deletedUser });
+    } else {
+      res.status(404).json({ error: "Usuário não encontrado" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

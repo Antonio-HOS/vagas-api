@@ -8,7 +8,7 @@ async function getUserById(id) {
   return Usuario.findByPk(id);
 }
 
-async function GetUserByEmail(email) {
+async function getUserByEmail(email) {
   return Usuario.findOne({ where: { email } });
 }
 
@@ -40,7 +40,7 @@ async function updateUser(id, dadosAtualizados) {
 module.exports = {
   getAllUsers,
   getUserById,
-  GetUserByEmail,
+  getUserByEmail,
   createUser,
   deleteUser,
   updateUser,

@@ -1,7 +1,16 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const vagaRepository = require("../repositories/vagaRepository");
 const { authenticateToken } = require("../middlewares/authenticateToken");
+const {
+  getAllVagas,
+  getVagaById,
+  createVaga,
+  updateVaga,
+  deleteVaga,
+} = require("../repositories/vagaRepository");
 
 // Variável de chave secreta para JWT
 const SECRET_KEY = process.env.SECRET_KEY || "secreta";
@@ -33,7 +42,7 @@ const SECRET_KEY = process.env.SECRET_KEY || "secreta";
  */
 router.get("/", authenticateToken, async (req, res) => {
   try {
-    const jobs = await vagaRepository.getAllVagas();
+    const jobs = await getAllVagas();
     res.status(200).json({ jobs });
   } catch (err) {
     res.status(500).json({ error: "Erro ao buscar vagas." });
@@ -66,7 +75,7 @@ router.get("/", authenticateToken, async (req, res) => {
 router.get("/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const job = await vagaRepository.getVagaById(id);
+    const job = await getVagaById(id);
     if (job) {
       res.status(200).json({ job });
     } else {
@@ -118,14 +127,17 @@ router.get("/:id", authenticateToken, async (req, res) => {
  *         description: Erro ao criar vaga.
  */
 router.post("/", authenticateToken, async (req, res) => {
-  const { title, description, dataCadastro, telefone, status, empresa } = req.body;
+  const { title, description, dataCadastro, telefone, status, empresa } =
+    req.body;
 
   if (!title || !description) {
-    return res.status(400).json({ error: "Título e descrição são obrigatórios." });
+    return res
+      .status(400)
+      .json({ error: "Título e descrição são obrigatórios." });
   }
 
   try {
-    const job = await vagaRepository.createVaga(
+    const job = await createVaga(
       title,
       description,
       dataCadastro,
@@ -183,10 +195,11 @@ router.post("/", authenticateToken, async (req, res) => {
  */
 router.put("/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { title, description, dataCadastro, telefone, status, empresa } = req.body;
+  const { title, description, dataCadastro, telefone, status, empresa } =
+    req.body;
 
   try {
-    const job = await vagaRepository.updateVaga(
+    const job = await updateVaga(
       id,
       title,
       description,
@@ -232,7 +245,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deletedJob = await vagaRepository.deleteVaga(id);
+    const deletedJob = await deleteVaga(id);
     if (deletedJob) {
       res.status(200).json({ message: "Vaga removida com sucesso." });
     } else {

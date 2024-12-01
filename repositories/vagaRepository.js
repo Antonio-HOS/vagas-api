@@ -18,11 +18,34 @@ async function getVagaById(id) {
 
 async function createVaga(title, description, dataCadastro, telefone, status, empresa) {
   try {
-    return await vaga.create({ title, description, dataCadastro, telefone, status, empresa });
+    // Validação básica
+    if (!title || !description || !dataCadastro || !telefone || !status || !empresa) {
+      throw new Error("Todos os campos são obrigatórios.");
+    }
+
+    // Converta dataCadastro para um formato válido, se necessário
+    const dataCadastroFormatada = new Date(dataCadastro);
+    if (isNaN(dataCadastroFormatada)) {
+      throw new Error("Formato de data inválido para 'dataCadastro'.");
+    }
+
+    // Criação da vaga
+    const vagaCriada = await vaga.create({
+      title,
+      description,
+      dataCadastro: dataCadastroFormatada,
+      telefone,
+      status,
+      empresa,
+    });
+
+    return vagaCriada;
   } catch (error) {
-    throw new Error(error.message);
+    // Mensagem de erro mais detalhada
+    throw new Error(`Erro ao criar vaga: ${error.message}`);
   }
 }
+
 
 async function updateVaga(id, title, description, dataCadastro, telefone, status, empresa) {
   try {

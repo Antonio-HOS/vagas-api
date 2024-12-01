@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const bcrypt = require('bcryptjs');
 
 const Emprego = sequelize.define("Emprego", {
   id: {
@@ -7,28 +8,28 @@ const Emprego = sequelize.define("Emprego", {
     primaryKey: true,
     autoIncrement: true,
   },
-  tituloVaga: {
+  title: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  detalhes: {
+  description: {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  criadoEm: {
+  dataCadastro: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     allowNull: false,
   },
-  contato: {
+  telefone: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  situacao: {
+  status: {
     type: DataTypes.ENUM("ativo", "inativo"),
     allowNull: false,
   },
-  companhia: {
+  empresa: {
     type: DataTypes.STRING,
     allowNull: false,
   },

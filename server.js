@@ -2,6 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
 const { authenticateToken } = require('./middlewares/authenticateToken');
+const usuariosRoutes = require('./routes/usuarios');
+const vagasRoutes = require('./routes/vagas');
+
 require('dotenv').config();
 
 const app = express();
@@ -12,6 +15,10 @@ sequelize.sync().then(() => {
 }).catch(err => {
   console.error('Unable to synchronize the database:', err);
 });
+
+app.use('/api/usuario', usuariosRoutes);
+app.use('/api/vagas', authenticateToken, vagasRoutes)
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -107,7 +107,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Credenciais inválidas" });
     }
     const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, {
-      expiresIn: "1h",
+      expiresIn: "20h",
     });
     res.json({ token, id: user.id, senha: user.senha, nome: user.nome, email: user.email });
   } catch (err) {
